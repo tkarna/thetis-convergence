@@ -203,14 +203,14 @@ def setup5(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_gra
     out['uv_dav_3d'] = as_vector((sin(3)*sin(2*pi*xyz[0]/lx)/6, (-2*depth*cos(pi*xyz[1]/ly)/3 + 2*depth*cos(1/2)*cos(pi*xyz[1]/ly)/3)/depth, Constant(0)))
     out['uv_3d'] = as_vector((sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)/2 - sin(3)*sin(2*pi*xyz[0]/lx)/6, sin(xyz[2]/(2*depth))*cos(pi*xyz[1]/ly)/3 - (-2*depth*cos(pi*xyz[1]/ly)/3 + 2*depth*cos(1/2)*cos(pi*xyz[1]/ly)/3)/depth, Constant(0)))
     out['w_3d'] = as_vector((Constant(0), Constant(0), -2*pi*depth*sin(pi*xyz[1]/ly)*cos(xyz[2]/(2*depth))/(3*ly) + 2*pi*depth*sin(pi*xyz[1]/ly)*cos(1/2)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx)))
-    out['temp_3d'] = 5*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)*cos(xyz[2]/depth) + 10
-    out['density_3d'] = -eos_alpha*(-eos_t0 + 5*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)*cos(xyz[2]/depth) + 10) + eos_beta*(-eos_s0 + salt_const)
-    out['baroc_head_3d'] = (-5*depth*eos_alpha*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly) + eos_alpha*eos_t0*xyz[2] - 10*eos_alpha*xyz[2] - eos_beta*eos_s0*xyz[2] + eos_beta*salt_const*xyz[2])/rho_0
-    out['int_pg_3d'] = as_vector((5*pi*depth*eos_alpha*g_grav*sin(xyz[2]/depth)*sin(pi*xyz[1]/ly)*cos(pi*xyz[0]/lx)/(lx*rho_0), 5*pi*depth*eos_alpha*g_grav*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*cos(pi*xyz[1]/ly)/(ly*rho_0), Constant(0)))
+    out['temp_3d'] = 15*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)*cos(xyz[2]/depth) + 15
+    out['density_3d'] = -eos_alpha*(-eos_t0 + 15*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)*cos(xyz[2]/depth) + 15) + eos_beta*(-eos_s0 + salt_const)
+    out['baroc_head_3d'] = (-15*depth*eos_alpha*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly) + eos_alpha*eos_t0*xyz[2] - 15*eos_alpha*xyz[2] - eos_beta*eos_s0*xyz[2] + eos_beta*salt_const*xyz[2])/rho_0
+    out['int_pg_3d'] = as_vector((15*pi*depth*eos_alpha*g_grav*sin(xyz[2]/depth)*sin(pi*xyz[1]/ly)*cos(pi*xyz[0]/lx)/(lx*rho_0), 15*pi*depth*eos_alpha*g_grav*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*cos(pi*xyz[1]/ly)/(ly*rho_0), Constant(0)))
     out['vol_source_2d'] = -2*pi*depth*sin(pi*xy[1]/ly)*cos(1/2)/(3*ly) + 2*pi*depth*sin(pi*xy[1]/ly)/(3*ly) + pi*depth*sin(3)*cos(2*pi*xy[0]/lx)/(3*lx)
     out['mom_source_2d'] = as_vector((-f0*(-2*depth*cos(pi*xy[1]/ly)/3 + 2*depth*cos(1/2)*cos(pi*xy[1]/ly)/3)/depth, f0*sin(3)*sin(2*pi*xy[0]/lx)/6))
-    out['mom_source_3d'] = as_vector((5*pi*depth*eos_alpha*g_grav*sin(xyz[2]/depth)*sin(pi*xyz[1]/ly)*cos(pi*xyz[0]/lx)/(lx*rho_0) - f0*(sin(xyz[2]/(2*depth))*cos(pi*xyz[1]/ly)/3 - (-2*depth*cos(pi*xyz[1]/ly)/3 + 2*depth*cos(1/2)*cos(pi*xyz[1]/ly)/3)/depth) + pi*sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)**2*cos(2*pi*xyz[0]/lx)/(2*lx) - 3*(-2*pi*depth*sin(pi*xyz[1]/ly)*cos(xyz[2]/(2*depth))/(3*ly) + 2*pi*depth*sin(pi*xyz[1]/ly)*cos(1/2)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx))*sin(3*xyz[2]/depth)*sin(2*pi*xyz[0]/lx)/(2*depth), 5*pi*depth*eos_alpha*g_grav*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*cos(pi*xyz[1]/ly)/(ly*rho_0) + f0*(sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)/2 - sin(3)*sin(2*pi*xyz[0]/lx)/6) - pi*sin(xyz[2]/(2*depth))**2*sin(pi*xyz[1]/ly)*cos(pi*xyz[1]/ly)/(9*ly) + (-2*pi*depth*sin(pi*xyz[1]/ly)*cos(xyz[2]/(2*depth))/(3*ly) + 2*pi*depth*sin(pi*xyz[1]/ly)*cos(1/2)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx))*cos(xyz[2]/(2*depth))*cos(pi*xyz[1]/ly)/(6*depth), Constant(0)))
-    out['temp_source_3d'] = 5*pi*sin(xyz[2]/(2*depth))*sin(pi*xyz[0]/lx)*cos(xyz[2]/depth)*cos(pi*xyz[1]/ly)**2/(3*ly) + 5*pi*sin(2*pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)*cos(xyz[2]/depth)*cos(3*xyz[2]/depth)*cos(pi*xyz[0]/lx)/(2*lx) - 5*(-2*pi*depth*sin(pi*xyz[1]/ly)*cos(xyz[2]/(2*depth))/(3*ly) + 2*pi*depth*sin(pi*xyz[1]/ly)*cos(1/2)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx))*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)/depth
+    out['mom_source_3d'] = as_vector((15*pi*depth*eos_alpha*g_grav*sin(xyz[2]/depth)*sin(pi*xyz[1]/ly)*cos(pi*xyz[0]/lx)/(lx*rho_0) - f0*(sin(xyz[2]/(2*depth))*cos(pi*xyz[1]/ly)/3 - (-2*depth*cos(pi*xyz[1]/ly)/3 + 2*depth*cos(1/2)*cos(pi*xyz[1]/ly)/3)/depth) + pi*sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)**2*cos(2*pi*xyz[0]/lx)/(2*lx) - 3*(-2*pi*depth*sin(pi*xyz[1]/ly)*cos(xyz[2]/(2*depth))/(3*ly) + 2*pi*depth*sin(pi*xyz[1]/ly)*cos(1/2)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx))*sin(3*xyz[2]/depth)*sin(2*pi*xyz[0]/lx)/(2*depth), 15*pi*depth*eos_alpha*g_grav*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*cos(pi*xyz[1]/ly)/(ly*rho_0) + f0*(sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)/2 - sin(3)*sin(2*pi*xyz[0]/lx)/6) - pi*sin(xyz[2]/(2*depth))**2*sin(pi*xyz[1]/ly)*cos(pi*xyz[1]/ly)/(9*ly) + (-2*pi*depth*sin(pi*xyz[1]/ly)*cos(xyz[2]/(2*depth))/(3*ly) + 2*pi*depth*sin(pi*xyz[1]/ly)*cos(1/2)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx))*cos(xyz[2]/(2*depth))*cos(pi*xyz[1]/ly)/(6*depth), Constant(0)))
+    out['temp_source_3d'] = 5*pi*sin(xyz[2]/(2*depth))*sin(pi*xyz[0]/lx)*cos(xyz[2]/depth)*cos(pi*xyz[1]/ly)**2/ly + 15*pi*sin(2*pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)*cos(xyz[2]/depth)*cos(3*xyz[2]/depth)*cos(pi*xyz[0]/lx)/(2*lx) - 15*(-2*pi*depth*sin(pi*xyz[1]/ly)*cos(xyz[2]/(2*depth))/(3*ly) + 2*pi*depth*sin(pi*xyz[1]/ly)*cos(1/2)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx))*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)/depth
 
     out['options'] = {}
     return out
@@ -246,11 +246,11 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
     ny = 4*refinement
     mesh2d = RectangleMesh(nx, ny, lx, ly)
 
-    alpha = 2.0  # thermal expansion coeff
+    alpha = 0.2  # thermal expansion coeff
     beta = 0.0  # haline contraction coeff
-    temp_ref = 15.0
+    temp_ref = 10.0
     salt_const = Constant(10.0)
-    temp_const = Constant(5.0)
+    temp_const = Constant(10.0)
 
     # outputs
     outputdir = 'outputs'
