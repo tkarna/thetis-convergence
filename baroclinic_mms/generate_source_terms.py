@@ -81,8 +81,8 @@ rho0 = sympy.symbols('rho_0', positive=True)
 bath = depth
 elev = 0
 u = sympy.sin(2*sympy.pi*x/lx)*sympy.cos(3*(z/depth))/2
-v = 0 # sympy.sin(sympy.pi*y/ly)*sympy.sin((z/depth))/3
-temp = sympy.sin(sympy.pi*x/lx)*sympy.sin(sympy.pi*y/ly) + 15
+v = sympy.cos(sympy.pi*y/ly)*sympy.sin((z/depth/2))/3
+temp = 5*sympy.sin(sympy.pi*x/lx)*sympy.sin(sympy.pi*y/ly)*sympy.cos(z/depth) + 10
 salt = salt0
 nu = nu0
 f = f0
@@ -111,13 +111,15 @@ def evaluate_tracer_source(eta, trac, u, v, w, bath, f, nu):
     return sympy.diff(trac, x)*u + sympy.diff(trac, y)*v + sympy.diff(trac, z)*w
 
 
-def evaluate_mom_source(eta, baroc_head, u, v, w, bath, f, nu):
+def evaluate_mom_source(eta, baroc_head, u, v, w, u_3d, v_3d, bath, f, nu):
     int_pg_x = -g*sympy.diff(baroc_head, x)  # NOTE why the minus sign? BUG
     int_pg_y = -g*sympy.diff(baroc_head, y)
     adv_u = sympy.diff(u, x)*u + sympy.diff(u, y)*v + sympy.diff(u, z)*w
     adv_v = sympy.diff(v, x)*u + sympy.diff(v, y)*v + sympy.diff(v, z)*w
-    res_u = adv_u
-    res_v = adv_v
+    cori_u = -f*v_3d
+    cori_v = f*u_3d
+    res_u = adv_u + cori_u
+    res_v = adv_v + cori_v
     if not omit_int_pg:
         res_u += int_pg_x
         res_v += int_pg_y
@@ -164,7 +166,7 @@ u_3d, v_3d, u_2d, v_2d = split_velocity(u, v, elev, bath)
 w = evaluate_w(elev, u, v, bath)
 rho, baroc_head = evaluate_baroclinicity(elev, temp, salt)
 
-mom_source_x, mom_source_y, int_pg_x, int_pg_y = evaluate_mom_source(elev, baroc_head, u, v, w, bath, f, nu)
+mom_source_x, mom_source_y, int_pg_x, int_pg_y = evaluate_mom_source(elev, baroc_head, u, v, w, u_3d, v_3d, bath, f, nu)
 
 vol_source_2d, mom_source_2d_x, mom_source_2d_y = evaluate_swe_source(elev, u_2d, v_2d, bath, f, nu, nonlin=True)
 temp_source_3d = evaluate_tracer_source(elev, temp, u, v, w, bath, f, nu)

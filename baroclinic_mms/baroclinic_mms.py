@@ -198,19 +198,19 @@ def setup5(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_gra
 
     out = {}
     out['elev_2d'] = Constant(0)
-    out['uv_full_3d'] = as_vector((sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)/2, sin(xyz[2]/depth)*sin(pi*xyz[1]/ly)/3, Constant(0)))
-    out['uv_2d'] = as_vector((sin(3)*sin(2*pi*xy[0]/lx)/6, (-depth*sin(pi*xy[1]/ly)/3 + depth*sin(pi*xy[1]/ly)*cos(1)/3)/depth))
-    out['uv_dav_3d'] = as_vector((sin(3)*sin(2*pi*xyz[0]/lx)/6, (-depth*sin(pi*xyz[1]/ly)/3 + depth*sin(pi*xyz[1]/ly)*cos(1)/3)/depth, Constant(0)))
-    out['uv_3d'] = as_vector((sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)/2 - sin(3)*sin(2*pi*xyz[0]/lx)/6, sin(xyz[2]/depth)*sin(pi*xyz[1]/ly)/3 - (-depth*sin(pi*xyz[1]/ly)/3 + depth*sin(pi*xyz[1]/ly)*cos(1)/3)/depth, Constant(0)))
-    out['w_3d'] = as_vector((Constant(0), Constant(0), pi*depth*cos(xyz[2]/depth)*cos(pi*xyz[1]/ly)/(3*ly) - pi*depth*cos(1)*cos(pi*xyz[1]/ly)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx)))
-    out['temp_3d'] = sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly) + 15
-    out['density_3d'] = -eos_alpha*(-eos_t0 + sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly) + 15) + eos_beta*(-eos_s0 + salt_const)
-    out['baroc_head_3d'] = xyz[2]*(-eos_alpha*(-eos_t0 + sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly) + 15) + eos_beta*(-eos_s0 + salt_const))/rho_0
-    out['int_pg_3d'] = as_vector((pi*eos_alpha*g_grav*xyz[2]*sin(pi*xyz[1]/ly)*cos(pi*xyz[0]/lx)/(lx*rho_0), pi*eos_alpha*g_grav*xyz[2]*sin(pi*xyz[0]/lx)*cos(pi*xyz[1]/ly)/(ly*rho_0), Constant(0)))
-    out['vol_source_2d'] = -pi*depth*cos(pi*xy[1]/ly)/(3*ly) + pi*depth*cos(1)*cos(pi*xy[1]/ly)/(3*ly) + pi*depth*sin(3)*cos(2*pi*xy[0]/lx)/(3*lx)
-    out['mom_source_2d'] = as_vector((-f0*(-depth*sin(pi*xy[1]/ly)/3 + depth*sin(pi*xy[1]/ly)*cos(1)/3)/depth, f0*sin(3)*sin(2*pi*xy[0]/lx)/6))
-    out['mom_source_3d'] = as_vector((pi*eos_alpha*g_grav*xyz[2]*sin(pi*xyz[1]/ly)*cos(pi*xyz[0]/lx)/(lx*rho_0) + pi*sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)**2*cos(2*pi*xyz[0]/lx)/(2*lx) - 3*(pi*depth*cos(xyz[2]/depth)*cos(pi*xyz[1]/ly)/(3*ly) - pi*depth*cos(1)*cos(pi*xyz[1]/ly)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx))*sin(3*xyz[2]/depth)*sin(2*pi*xyz[0]/lx)/(2*depth), pi*eos_alpha*g_grav*xyz[2]*sin(pi*xyz[0]/lx)*cos(pi*xyz[1]/ly)/(ly*rho_0) + pi*sin(xyz[2]/depth)**2*sin(pi*xyz[1]/ly)*cos(pi*xyz[1]/ly)/(9*ly) + (pi*depth*cos(xyz[2]/depth)*cos(pi*xyz[1]/ly)/(3*ly) - pi*depth*cos(1)*cos(pi*xyz[1]/ly)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx))*sin(pi*xyz[1]/ly)*cos(xyz[2]/depth)/(3*depth), Constant(0)))
-    out['temp_source_3d'] = pi*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)*cos(pi*xyz[1]/ly)/(3*ly) + pi*sin(2*pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)*cos(3*xyz[2]/depth)*cos(pi*xyz[0]/lx)/(2*lx)
+    out['uv_full_3d'] = as_vector((sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)/2, sin(xyz[2]/(2*depth))*cos(pi*xyz[1]/ly)/3, Constant(0)))
+    out['uv_2d'] = as_vector((sin(3)*sin(2*pi*xy[0]/lx)/6, (-2*depth*cos(pi*xy[1]/ly)/3 + 2*depth*cos(1/2)*cos(pi*xy[1]/ly)/3)/depth))
+    out['uv_dav_3d'] = as_vector((sin(3)*sin(2*pi*xyz[0]/lx)/6, (-2*depth*cos(pi*xyz[1]/ly)/3 + 2*depth*cos(1/2)*cos(pi*xyz[1]/ly)/3)/depth, Constant(0)))
+    out['uv_3d'] = as_vector((sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)/2 - sin(3)*sin(2*pi*xyz[0]/lx)/6, sin(xyz[2]/(2*depth))*cos(pi*xyz[1]/ly)/3 - (-2*depth*cos(pi*xyz[1]/ly)/3 + 2*depth*cos(1/2)*cos(pi*xyz[1]/ly)/3)/depth, Constant(0)))
+    out['w_3d'] = as_vector((Constant(0), Constant(0), -2*pi*depth*sin(pi*xyz[1]/ly)*cos(xyz[2]/(2*depth))/(3*ly) + 2*pi*depth*sin(pi*xyz[1]/ly)*cos(1/2)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx)))
+    out['temp_3d'] = 5*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)*cos(xyz[2]/depth) + 10
+    out['density_3d'] = -eos_alpha*(-eos_t0 + 5*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)*cos(xyz[2]/depth) + 10) + eos_beta*(-eos_s0 + salt_const)
+    out['baroc_head_3d'] = (-5*depth*eos_alpha*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly) + eos_alpha*eos_t0*xyz[2] - 10*eos_alpha*xyz[2] - eos_beta*eos_s0*xyz[2] + eos_beta*salt_const*xyz[2])/rho_0
+    out['int_pg_3d'] = as_vector((5*pi*depth*eos_alpha*g_grav*sin(xyz[2]/depth)*sin(pi*xyz[1]/ly)*cos(pi*xyz[0]/lx)/(lx*rho_0), 5*pi*depth*eos_alpha*g_grav*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*cos(pi*xyz[1]/ly)/(ly*rho_0), Constant(0)))
+    out['vol_source_2d'] = -2*pi*depth*sin(pi*xy[1]/ly)*cos(1/2)/(3*ly) + 2*pi*depth*sin(pi*xy[1]/ly)/(3*ly) + pi*depth*sin(3)*cos(2*pi*xy[0]/lx)/(3*lx)
+    out['mom_source_2d'] = as_vector((-f0*(-2*depth*cos(pi*xy[1]/ly)/3 + 2*depth*cos(1/2)*cos(pi*xy[1]/ly)/3)/depth, f0*sin(3)*sin(2*pi*xy[0]/lx)/6))
+    out['mom_source_3d'] = as_vector((5*pi*depth*eos_alpha*g_grav*sin(xyz[2]/depth)*sin(pi*xyz[1]/ly)*cos(pi*xyz[0]/lx)/(lx*rho_0) - f0*(sin(xyz[2]/(2*depth))*cos(pi*xyz[1]/ly)/3 - (-2*depth*cos(pi*xyz[1]/ly)/3 + 2*depth*cos(1/2)*cos(pi*xyz[1]/ly)/3)/depth) + pi*sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)**2*cos(2*pi*xyz[0]/lx)/(2*lx) - 3*(-2*pi*depth*sin(pi*xyz[1]/ly)*cos(xyz[2]/(2*depth))/(3*ly) + 2*pi*depth*sin(pi*xyz[1]/ly)*cos(1/2)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx))*sin(3*xyz[2]/depth)*sin(2*pi*xyz[0]/lx)/(2*depth), 5*pi*depth*eos_alpha*g_grav*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*cos(pi*xyz[1]/ly)/(ly*rho_0) + f0*(sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)/2 - sin(3)*sin(2*pi*xyz[0]/lx)/6) - pi*sin(xyz[2]/(2*depth))**2*sin(pi*xyz[1]/ly)*cos(pi*xyz[1]/ly)/(9*ly) + (-2*pi*depth*sin(pi*xyz[1]/ly)*cos(xyz[2]/(2*depth))/(3*ly) + 2*pi*depth*sin(pi*xyz[1]/ly)*cos(1/2)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx))*cos(xyz[2]/(2*depth))*cos(pi*xyz[1]/ly)/(6*depth), Constant(0)))
+    out['temp_source_3d'] = 5*pi*sin(xyz[2]/(2*depth))*sin(pi*xyz[0]/lx)*cos(xyz[2]/depth)*cos(pi*xyz[1]/ly)**2/(3*ly) + 5*pi*sin(2*pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)*cos(xyz[2]/depth)*cos(3*xyz[2]/depth)*cos(pi*xyz[0]/lx)/(2*lx) - 5*(-2*pi*depth*sin(pi*xyz[1]/ly)*cos(xyz[2]/(2*depth))/(3*ly) + 2*pi*depth*sin(pi*xyz[1]/ly)*cos(1/2)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx))*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)/depth
 
     out['options'] = {}
     return out
@@ -230,7 +230,7 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
     area = lx*ly
     depth = 40.0
     nu0 = 0.0
-    f0 = 0.0
+    f0 = 1.0e-4
     dt = 25.0/refinement
     t_end = 50*dt
     if do_export:
@@ -273,8 +273,8 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
     options.use_bottom_friction = False
     options.use_lax_friedrichs_velocity = True
     options.lax_friedrichs_velocity_scaling_factor = Constant(1.0)
-    options.use_limiter_for_tracers = True
-    options.use_limiter_for_velocity = True
+    options.use_limiter_for_tracers = False
+    options.use_limiter_for_velocity = False
     options.constant_salinity = Constant(salt_const)
     options.horizontal_velocity_scale = Constant(2.0)
     options.timestepper_options.use_automatic_timestep = False
@@ -297,7 +297,7 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
     }
     options.equation_of_state_type = 'linear'
     options.equation_of_state_options.update(eos_params)
-    # diffusivuty
+    # diffusivity
     #nu = Function(solver_obj.function_spaces.P1, name='diffusivity')
     #nu.project(sdict['nu_expr'])
     #options.horizontal_diffusivity = nu
@@ -358,7 +358,8 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
     solver_obj.bnd_functions['temp'] = {1: bnd_temp, 2: bnd_temp,
                                         3: bnd_temp, 4: bnd_temp}
     # NOTE use symmetic uv condition to get correct w
-    bnd_mom = {'uv': sdict['uv_dav_3d'] + sdict['uv_3d']}
+    bnd_mom = {'uv': sdict['uv_full_3d']}
+    #bnd_mom = {'symm': None}
     solver_obj.bnd_functions['momentum'] = {1: bnd_mom, 2: bnd_mom,
                                             3: bnd_mom, 4: bnd_mom}
     bnd_swe = {'elev': sdict['elev_2d'], 'uv': sdict['uv_2d']}
