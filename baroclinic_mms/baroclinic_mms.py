@@ -187,6 +187,35 @@ def setup4b(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_gr
     return out
 
 
+def setup5(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_grav, eos_params):
+    """
+    Constant bathymetry, non-zero velocity and temp, baroclinic, symmetric
+    """
+    eos_alpha = eos_params['alpha']
+    eos_beta = eos_params['beta']
+    eos_t0 = eos_params['th_ref']
+    eos_s0 = eos_params['s_ref']
+
+    out = {}
+    out['elev_2d'] = Constant(0)
+    out['uv_full_3d'] = as_vector((sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)/2, sin(xyz[2]/depth)*sin(pi*xyz[1]/ly)/3, Constant(0)))
+    out['uv_2d'] = as_vector((sin(3)*sin(2*pi*xy[0]/lx)/6, (-depth*sin(pi*xy[1]/ly)/3 + depth*sin(pi*xy[1]/ly)*cos(1)/3)/depth))
+    out['uv_dav_3d'] = as_vector((sin(3)*sin(2*pi*xyz[0]/lx)/6, (-depth*sin(pi*xyz[1]/ly)/3 + depth*sin(pi*xyz[1]/ly)*cos(1)/3)/depth, Constant(0)))
+    out['uv_3d'] = as_vector((sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)/2 - sin(3)*sin(2*pi*xyz[0]/lx)/6, sin(xyz[2]/depth)*sin(pi*xyz[1]/ly)/3 - (-depth*sin(pi*xyz[1]/ly)/3 + depth*sin(pi*xyz[1]/ly)*cos(1)/3)/depth, Constant(0)))
+    out['w_3d'] = as_vector((Constant(0), Constant(0), pi*depth*cos(xyz[2]/depth)*cos(pi*xyz[1]/ly)/(3*ly) - pi*depth*cos(1)*cos(pi*xyz[1]/ly)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx)))
+    out['temp_3d'] = sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly) + 15
+    out['density_3d'] = -eos_alpha*(-eos_t0 + sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly) + 15) + eos_beta*(-eos_s0 + salt_const)
+    out['baroc_head_3d'] = xyz[2]*(-eos_alpha*(-eos_t0 + sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly) + 15) + eos_beta*(-eos_s0 + salt_const))/rho_0
+    out['int_pg_3d'] = as_vector((pi*eos_alpha*g_grav*xyz[2]*sin(pi*xyz[1]/ly)*cos(pi*xyz[0]/lx)/(lx*rho_0), pi*eos_alpha*g_grav*xyz[2]*sin(pi*xyz[0]/lx)*cos(pi*xyz[1]/ly)/(ly*rho_0), Constant(0)))
+    out['vol_source_2d'] = -pi*depth*cos(pi*xy[1]/ly)/(3*ly) + pi*depth*cos(1)*cos(pi*xy[1]/ly)/(3*ly) + pi*depth*sin(3)*cos(2*pi*xy[0]/lx)/(3*lx)
+    out['mom_source_2d'] = as_vector((-f0*(-depth*sin(pi*xy[1]/ly)/3 + depth*sin(pi*xy[1]/ly)*cos(1)/3)/depth, f0*sin(3)*sin(2*pi*xy[0]/lx)/6))
+    out['mom_source_3d'] = as_vector((pi*eos_alpha*g_grav*xyz[2]*sin(pi*xyz[1]/ly)*cos(pi*xyz[0]/lx)/(lx*rho_0) + pi*sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)**2*cos(2*pi*xyz[0]/lx)/(2*lx) - 3*(pi*depth*cos(xyz[2]/depth)*cos(pi*xyz[1]/ly)/(3*ly) - pi*depth*cos(1)*cos(pi*xyz[1]/ly)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx))*sin(3*xyz[2]/depth)*sin(2*pi*xyz[0]/lx)/(2*depth), pi*eos_alpha*g_grav*xyz[2]*sin(pi*xyz[0]/lx)*cos(pi*xyz[1]/ly)/(ly*rho_0) + pi*sin(xyz[2]/depth)**2*sin(pi*xyz[1]/ly)*cos(pi*xyz[1]/ly)/(9*ly) + (pi*depth*cos(xyz[2]/depth)*cos(pi*xyz[1]/ly)/(3*ly) - pi*depth*cos(1)*cos(pi*xyz[1]/ly)/(3*ly) - pi*depth*sin(3*xyz[2]/depth)*cos(2*pi*xyz[0]/lx)/(3*lx) - pi*depth*sin(3)*cos(2*pi*xyz[0]/lx)/(3*lx))*sin(pi*xyz[1]/ly)*cos(xyz[2]/depth)/(3*depth), Constant(0)))
+    out['temp_source_3d'] = pi*sin(xyz[2]/depth)*sin(pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)*cos(pi*xyz[1]/ly)/(3*ly) + pi*sin(2*pi*xyz[0]/lx)*sin(pi*xyz[1]/ly)*cos(3*xyz[2]/depth)*cos(pi*xyz[0]/lx)/(2*lx)
+
+    out['options'] = {}
+    return out
+
+
 def run(setup, refinement, polynomial_degree, do_export=True, **options):
     """Run single test and return L2 error"""
     print_output('--- running {:} refinement {:}'.format(setup.__name__, refinement))
@@ -202,7 +231,8 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
     depth = 40.0
     nu0 = 0.0
     f0 = 0.0
-    t_end = 1000.0
+    dt = 25.0/refinement
+    t_end = 50*dt
     if do_export:
         t_export = t_end/10
     else:
@@ -244,8 +274,11 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
     options.use_lax_friedrichs_velocity = True
     options.lax_friedrichs_velocity_scaling_factor = Constant(1.0)
     options.use_limiter_for_tracers = True
+    options.use_limiter_for_velocity = True
     options.constant_salinity = Constant(salt_const)
     options.horizontal_velocity_scale = Constant(2.0)
+    options.timestepper_options.use_automatic_timestep = False
+    options.timestep = dt
     options.no_exports = not do_export
     options.output_directory = outputdir
     options.simulation_end_time = t_end
@@ -329,8 +362,8 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
     solver_obj.bnd_functions['momentum'] = {1: bnd_mom, 2: bnd_mom,
                                             3: bnd_mom, 4: bnd_mom}
     bnd_swe = {'elev': sdict['elev_2d'], 'uv': sdict['uv_2d']}
-    ##bnd_swe = {'elev': sdict['elev_2d']}
-    ##bnd_swe = {'uv': sdict['uv_2d']}
+    #bnd_swe = {'elev': sdict['elev_2d']}
+    #bnd_swe = {'uv': sdict['uv_2d']}
     solver_obj.bnd_functions['shallow_water'] ={1: bnd_swe, 2: bnd_swe,
                                                 3: bnd_swe, 4: bnd_swe}
 
@@ -346,6 +379,12 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
     l2_err = {}
     for v in var_list:
         l2_err[v] = errornorm(sdict[v], solver_obj.fields[v])/np.sqrt(area)
+    solver_obj.fields.uv_dav_2d.assign(solver_obj.fields.uv_2d)
+    solver_obj.copy_uv_dav_to_uv_dav_3d.solve()
+    f = solver_obj.function_spaces.U.get_work_function()
+    f.assign(solver_obj.fields.uv_3d + solver_obj.fields.uv_dav_3d)
+    l2_err['uv_full'] = errornorm(sdict['uv_full_3d'], f)/np.sqrt(area)
+    solver_obj.function_spaces.U.restore_work_function(f)
     for k in sorted(l2_err):
         print_output('L2 error {:} {:.12f}'.format(k, l2_err[k]))
 
@@ -424,7 +463,12 @@ def run_convergence(setup, ref_list, saveplot=False, **options):
 # - setup4 OK
 # - setup4b ~okayish
 
-#run(setup4, refinement=2, polynomial_degree=1)
+#run(setup5, refinement=2, polynomial_degree=1)
 
-run_convergence(setup4b, [1, 2, 4], saveplot=True, polynomial_degree=1, element_family='dg-dg', do_export=False)
+# NOTE int pg boundary conditions are an issue
+# try with symmetric int pg forcing that vanishes on the boundaries
+# or symm field with periodic boundaries
+
+#run_convergence(setup5, [1, 2, 4], saveplot=True, polynomial_degree=1, element_family='dg-dg', do_export=False)
+run_convergence(setup5, [1, 2, 4, 6, 8, 10], saveplot=True, polynomial_degree=1, element_family='dg-dg', do_export=False)
 

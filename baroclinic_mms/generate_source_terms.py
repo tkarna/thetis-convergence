@@ -66,16 +66,27 @@ rho0 = sympy.symbols('rho_0', positive=True)
 #omit_int_pg = True
 
 # setup 4 -- velocity and temp
+#bath = depth
+#elev = 0
+#u = sympy.cos((2*x + y)/lx)*sympy.cos(3*(z/depth))/2
+#v = 0
+#temp = 5*sympy.cos((x + 2*y)/lx)*sympy.cos((z/depth)) + 15
+#salt = salt0
+#nu = nu0
+#f = f0
+##omit_int_pg = True
+#omit_int_pg = False  # setup4b
+
+# setup 5 -- velocity and temp, symmetric
 bath = depth
 elev = 0
-u = sympy.cos((2*x + y)/lx)*sympy.cos(3*(z/depth))/2
-v = 0
-temp = 5*sympy.cos((x + 2*y)/lx)*sympy.cos((z/depth)) + 15
+u = sympy.sin(2*sympy.pi*x/lx)*sympy.cos(3*(z/depth))/2
+v = 0 # sympy.sin(sympy.pi*y/ly)*sympy.sin((z/depth))/3
+temp = sympy.sin(sympy.pi*x/lx)*sympy.sin(sympy.pi*y/ly) + 15
 salt = salt0
 nu = nu0
 f = f0
-#omit_int_pg = True
-omit_int_pg = False  # setup4b
+omit_int_pg = False
 
 
 def split_velocity(u, v, eta, bath):
@@ -175,7 +186,7 @@ def print_expr(name, *expr):
         else:
             comp_str = ', '.join([expr2str(e) for e in expr])
             expr_str = 'as_vector((' + comp_str + '))'
-    print("out['{:}'] = {:}".format(name, expr_str))
+    print("    out['{:}'] = {:}".format(name, expr_str))
 
 def to_2d_coords(expr):
     if isinstance(expr, numbers.Number):
@@ -183,7 +194,7 @@ def to_2d_coords(expr):
     return expr.subs(x, x_2d).subs(y, y_2d)
 
 print_expr('elev_2d', to_2d_coords(elev))
-print_expr('uv_full_3d', u, v)
+print_expr('uv_full_3d', u, v, 0)
 print_expr('uv_2d', to_2d_coords(u_2d), to_2d_coords(v_2d))
 print_expr('uv_dav_3d', u_2d, v_2d, 0)
 print_expr('uv_3d', u_3d, v_3d, 0)
