@@ -3,8 +3,30 @@ MMS test for baroclinic 3D model
 """
 from thetis import *
 from scipy import stats
+from collections import defaultdict
 
-# TODO step 1: run model with non-trivial density field (lin eos) and add correct forcing term in momentum eq.
+field_metadata['uv_full'] = dict(field_metadata['uv_3d'])
+
+
+class AxesLabeler(object):
+    """Adds a) b) etc labels to axes"""
+    def __init__(self, x=0.0, y=1.02, fontsize=16, **text_kwargs):
+        import string
+        self.ch_iter = iter(string.ascii_lowercase)
+        self.x = x
+        self.y = y
+        self.fontsize = fontsize
+        text_kwargs.setdefault('verticalalignment', 'bottom')
+        text_kwargs.setdefault('horizontalalignment', 'left')
+        self.text_kwargs = text_kwargs
+
+    def add_label_to_axes(self, ax, char=None):
+        if char is None:
+            char = next(self.ch_iter)
+        ax.text(self.x, self.y, char+')', fontsize=self.fontsize,
+                transform=ax.transAxes,
+                **self.text_kwargs)
+
 
 
 def setup1(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_grav, eos_params):
@@ -406,10 +428,10 @@ def run_convergence(setup, ref_list, saveplot=False, **options):
         y_log[k] = np.log10(np.array([e[k] for e in l2_err]))
     setup_name = setup.__name__
 
-    def check_convergence(x_log, y_log, expected_slope, field_str, saveplot, ax):
+    def check_convergence(x_log, y_log, expected_slope, field_str, plot=False, ax=None):
         slope_rtol = 0.07
         slope, intercept, r_value, p_value, std_err = stats.linregress(x_log, y_log)
-        if saveplot:
+        if plot:
             # plot points
             ax.plot(x_log, y_log, 'k.')
             x_min = x_log.min()
@@ -426,7 +448,8 @@ def run_convergence(setup, ref_list, saveplot=False, **options):
             ax.set_xlabel('log10(dx)')
             ax.set_ylabel('log10(L2 error)')
             #ax.set_title(' '.join([setup_name, field_str, 'degree={:}'.format(polynomial_degree), space_str]))
-            ax.set_title(field_str)
+            ax.set_title(field_metadata[field_str]['name'])
+            ax.grid(True, which='major')
         if expected_slope is not None:
             err_msg = '{:}: {:} Wrong convergence rate {:.4f}, expected {:.4f}'.format(setup_name, field_str, slope, expected_slope)
             assert slope > expected_slope*(1 - slope_rtol), err_msg
@@ -436,20 +459,32 @@ def run_convergence(setup, ref_list, saveplot=False, **options):
         return slope
 
     import matplotlib.pyplot as plt
+    vars_to_plot = ['elev_2d', 'temp_3d', 'uv_full', 'w_3d']
     if saveplot:
-        ncols = len(var_list)
-        fig, ax_list = plt.subplots(nrows=1, ncols=ncols, figsize=(5*ncols, 4))
+        ncols = int(len(vars_to_plot)/2)
+        nrows = 2
+        fig, ax_list = plt.subplots(nrows=nrows, ncols=ncols, figsize=(5*ncols, 4*nrows))
+        ax_iter = iter(ax_list.ravel())
+        ax_labeler = AxesLabeler(x=-0.07)
+        fig.subplots_adjust(wspace=0.3, hspace=0.33)
 
-    ax_iter = iter(ax_list)
+
+    def expected_rate(v):
+        if v in ['w_3d']:
+            return polynomial_degree
+        return polynomial_degree+1
+
     for v in var_list:
-        try:
-            check_convergence(x_log, y_log[v], polynomial_degree+1, v, saveplot, next(ax_iter))
-        except Exception as e:
-            print(e)
+        do_plot = v in vars_to_plot and saveplot
+        ax = next(ax_iter) if do_plot else None
+        if do_plot:
+            ax_labeler.add_label_to_axes(ax)
+        check_convergence(x_log, y_log[v], expected_rate(v), v, plot=do_plot, ax=ax)
 
     ref_str = 'ref-' + '-'.join([str(r) for r in ref_list])
     degree_str = 'o{:}'.format(polynomial_degree)
-    imgfile = '_'.join(['convergence', setup_name, ref_str, degree_str, space_str])
+    test_name = 'baroclinic-mms'
+    imgfile = '_'.join(['convergence', test_name, setup_name, ref_str, degree_str, space_str])
     imgfile += '.png'
     imgdir = create_directory('plots')
     imgfile = os.path.join(imgdir, imgfile)
