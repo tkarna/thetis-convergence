@@ -27,17 +27,38 @@ class AxesLabeler(object):
                 transform=ax.transAxes,
                 **self.text_kwargs)
 
+# define some global constants
+lx = 15e3
+ly = 10e3
+area = lx*ly
+depth = 40.0
+nu0 = 0.0
+f0 = 1.0e-4
+alpha = 0.2  # thermal expansion coeff
+beta = 0.0  # haline contraction coeff
+temp_ref = 5.0
+salt_const = Constant(35.0)
+temp_const = Constant(10.0)
+rho_0 = 1000.0
+physical_constants['rho0'] = rho_0
+g_grav = physical_constants['g_grav']
+eos_params = {
+    'rho_ref': rho_0,
+    's_ref': salt_const.dat.data[0],
+    'th_ref': temp_ref,
+    'alpha': alpha,
+    'beta': beta,
+}
+eos_alpha = eos_params['alpha']
+eos_beta = eos_params['beta']
+eos_t0 = eos_params['th_ref']
+eos_s0 = eos_params['s_ref']
 
 
-def setup1(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_grav, eos_params):
+def setup1(xy, xyz):
     """
     Constant bathymetry and zero velocity, non-trivial active tracer
     """
-    eos_alpha = eos_params['alpha']
-    eos_beta = eos_params['beta']
-    eos_t0 = eos_params['th_ref']
-    eos_s0 = eos_params['s_ref']
-
     out = {}
     out['elev_2d'] = Constant(0)
     out['uv_full_3d'] = Constant((0, 0))
@@ -58,15 +79,10 @@ def setup1(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_gra
     return out
 
 
-def setup2(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_grav, eos_params):
+def setup2(xy, xyz):
     """
     Constant bathymetry and zero velocity, non-trivial elevation
     """
-    eos_alpha = eos_params['alpha']
-    eos_beta = eos_params['beta']
-    eos_t0 = eos_params['th_ref']
-    eos_s0 = eos_params['s_ref']
-
     out = {}
     out['elev_2d'] = 5*cos((xy[0] + 5*xy[1]/2)/lx)
     out['uv_full_3d'] = Constant((0, 0))
@@ -89,15 +105,10 @@ def setup2(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_gra
     return out
 
 
-def setup2b(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_grav, eos_params):
+def setup2b(xy, xyz):
     """
     Constant bathymetry and zero velocity, non-trivial elevation, baroclinic
     """
-    eos_alpha = eos_params['alpha']
-    eos_beta = eos_params['beta']
-    eos_t0 = eos_params['th_ref']
-    eos_s0 = eos_params['s_ref']
-
     out = {}
     out['elev_2d'] = 5*cos((xy[0] + 5*xy[1]/2)/lx)
     out['uv_full_3d'] = Constant((0, 0))
@@ -118,15 +129,10 @@ def setup2b(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_gr
     return out
 
 
-def setup3(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_grav, eos_params):
+def setup3(xy, xyz):
     """
     Constant bathymetry, non-zero velocity
     """
-    eos_alpha = eos_params['alpha']
-    eos_beta = eos_params['beta']
-    eos_t0 = eos_params['th_ref']
-    eos_s0 = eos_params['s_ref']
-
     out = {}
     out['elev_2d'] = Constant(0)
     out['uv_full_3d'] = as_vector((cos((2*xyz[0] + xyz[1])/lx), Constant(0)))
@@ -149,15 +155,10 @@ def setup3(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_gra
     return out
 
 
-def setup4(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_grav, eos_params):
+def setup4(xy, xyz):
     """
     Constant bathymetry, non-zero velocity and passive temp
     """
-    eos_alpha = eos_params['alpha']
-    eos_beta = eos_params['beta']
-    eos_t0 = eos_params['th_ref']
-    eos_s0 = eos_params['s_ref']
-
     out = {}
     out['elev_2d'] = Constant(0)
     out['uv_full_3d'] = as_vector((cos(3*xyz[2]/depth)*cos((2*xyz[0] + xyz[1])/lx)/2, Constant(0)))
@@ -180,15 +181,10 @@ def setup4(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_gra
     return out
 
 
-def setup4b(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_grav, eos_params):
+def setup4b(xy, xyz):
     """
     Constant bathymetry, non-zero velocity and temp, baroclinic
     """
-    eos_alpha = eos_params['alpha']
-    eos_beta = eos_params['beta']
-    eos_t0 = eos_params['th_ref']
-    eos_s0 = eos_params['s_ref']
-
     out = {}
     out['elev_2d'] = Constant(0)
     out['uv_full_3d'] = as_vector((cos(3*xyz[2]/depth)*cos((2*xyz[0] + xyz[1])/lx)/2, Constant(0)))
@@ -209,15 +205,10 @@ def setup4b(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_gr
     return out
 
 
-def setup5(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_grav, eos_params):
+def setup5(xy, xyz):
     """
     Constant bathymetry, non-zero velocity and temp, baroclinic, symmetric
     """
-    eos_alpha = eos_params['alpha']
-    eos_beta = eos_params['beta']
-    eos_t0 = eos_params['th_ref']
-    eos_s0 = eos_params['s_ref']
-
     out = {}
     out['elev_2d'] = Constant(0)
     out['uv_full_3d'] = as_vector((sin(2*pi*xyz[0]/lx)*cos(3*xyz[2]/depth)/2, sin(xyz[2]/(2*depth))*cos(pi*xyz[1]/ly)/3, Constant(0)))
@@ -242,17 +233,7 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
     """Run single test and return L2 error"""
     print_output('--- running {:} refinement {:}'.format(setup.__name__, refinement))
 
-    rho_0 = 1000.0
-    physical_constants['rho0'] = rho_0
-    g_grav = physical_constants['g_grav']
-
     # domain dimensions
-    lx = 15e3
-    ly = 10e3
-    area = lx*ly
-    depth = 40.0
-    nu0 = 0.0
-    f0 = 1.0e-4
     dt = 25.0/refinement
     t_end = 50*dt
     if do_export:
@@ -267,12 +248,6 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
     nx = 4*refinement
     ny = 4*refinement
     mesh2d = RectangleMesh(nx, ny, lx, ly)
-
-    alpha = 0.2  # thermal expansion coeff
-    beta = 0.0  # haline contraction coeff
-    temp_ref = 10.0
-    salt_const = Constant(10.0)
-    temp_const = Constant(10.0)
 
     # outputs
     outputdir = 'outputs'
@@ -310,22 +285,15 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
                                 'density_3d', 'baroc_head_3d', 'int_pg_3d']
     options.horizontal_viscosity_scale = Constant(nu0)
     #salt = Constant(salt_const)
-    eos_params = {
-        'rho_ref': rho_0,
-        's_ref': salt_const.dat.data[0],
-        'th_ref': temp_ref,
-        'alpha': alpha,
-        'beta': beta,
-    }
     options.equation_of_state_type = 'linear'
     options.equation_of_state_options.update(eos_params)
     # diffusivity
     #nu = Function(solver_obj.function_spaces.P1, name='diffusivity')
     #nu.project(sdict['nu_expr'])
     #options.horizontal_diffusivity = nu
-    xyz = SpatialCoordinate(solver_obj.mesh)
     xy = SpatialCoordinate(solver_obj.mesh2d)
-    sdict = setup(xy, xyz, lx, ly, depth, salt_const, temp_const, nu0, f0, rho_0, g_grav, eos_params)
+    xyz = SpatialCoordinate(solver_obj.mesh)
+    sdict = setup(xy, xyz)
 
     options.update(sdict['options'])
     options.update(options)
@@ -335,11 +303,6 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
     solver_obj.create_function_spaces()
 
     # analytical solution
-    eos_alpha = eos_params['alpha']
-    eos_beta = eos_params['beta']
-    eos_t0 = eos_params['th_ref']
-    eos_s0 = eos_params['s_ref']
-
     ana_w_3d = sdict['w_3d']
     f = Function(solver_obj.function_spaces.U, name='ana w').project(ana_w_3d)
     out = File(outputdir + '/ana_w.pvd')
@@ -498,6 +461,7 @@ def run_convergence(setup, ref_list, saveplot=False, **options):
 # - setup3 OK
 # - setup4 OK
 # - setup4b ~okayish
+
 
 #run(setup5, refinement=2, polynomial_degree=1)
 
