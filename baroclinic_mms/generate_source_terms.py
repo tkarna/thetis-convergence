@@ -108,22 +108,27 @@ def evaluate_baroclinicity(elev, temp, salt):
 
 
 def evaluate_tracer_source(eta, trac, u, v, w, bath, f, nu):
-    return sympy.diff(trac, x)*u + sympy.diff(trac, y)*v + sympy.diff(trac, z)*w
+    adv_t_uv = sympy.diff(trac, x)*u + sympy.diff(trac, y)*v
+    adv_t_w = sympy.diff(trac, z)*w
+    adv_t = adv_t_uv + adv_t_w
+    return adv_t, adv_t_uv, adv_t_w
 
 
 def evaluate_mom_source(eta, baroc_head, u, v, w, u_3d, v_3d, bath, f, nu):
     int_pg_x = -g*sympy.diff(baroc_head, x)  # NOTE why the minus sign? BUG
     int_pg_y = -g*sympy.diff(baroc_head, y)
-    adv_u = sympy.diff(u, x)*u + sympy.diff(u, y)*v + sympy.diff(u, z)*w
-    adv_v = sympy.diff(v, x)*u + sympy.diff(v, y)*v + sympy.diff(v, z)*w
+    adv_u = sympy.diff(u, x)*u + sympy.diff(u, y)*v
+    adv_v = sympy.diff(v, x)*u + sympy.diff(v, y)*v
+    adv_w_u = sympy.diff(u, z)*w
+    adv_w_v = sympy.diff(v, z)*w
     cori_u = -f*v_3d
     cori_v = f*u_3d
-    res_u = adv_u + cori_u
-    res_v = adv_v + cori_v
+    res_u = adv_u + adv_w_u +  cori_u
+    res_v = adv_v + adv_w_v + cori_v
     if not omit_int_pg:
         res_u += int_pg_x
         res_v += int_pg_y
-    return res_u, res_v, int_pg_x, int_pg_y
+    return res_u, res_v, int_pg_x, int_pg_y, adv_u, adv_v, adv_w_u, adv_w_v, cori_u, cori_v
 
 
 def evaluate_swe_source(eta, u, v, bath, f, nu, nonlin=True):
@@ -158,7 +163,7 @@ def evaluate_swe_source(eta, u, v, bath, f, nu, nonlin=True):
     # NOTE in the coupled system 2d mom eq has no advection/diffusion terms
     res_u = sympy.diff(u, t) + cori_u + pg_u
     res_v = sympy.diff(v, t) + cori_v + pg_v
-    return res_elev, res_u, res_v
+    return res_elev, res_u, res_v, cori_u, cori_v
 
 
 
@@ -166,10 +171,10 @@ u_3d, v_3d, u_2d, v_2d = split_velocity(u, v, elev, bath)
 w = evaluate_w(elev, u, v, bath)
 rho, baroc_head = evaluate_baroclinicity(elev, temp, salt)
 
-mom_source_x, mom_source_y, int_pg_x, int_pg_y = evaluate_mom_source(elev, baroc_head, u, v, w, u_3d, v_3d, bath, f, nu)
+mom_source_x, mom_source_y, int_pg_x, int_pg_y, adv_u, adv_v, adv_w_u, adv_w_v, cori_u, cori_v = evaluate_mom_source(elev, baroc_head, u, v, w, u_3d, v_3d, bath, f, nu)
 
-vol_source_2d, mom_source_2d_x, mom_source_2d_y = evaluate_swe_source(elev, u_2d, v_2d, bath, f, nu, nonlin=True)
-temp_source_3d = evaluate_tracer_source(elev, temp, u, v, w, bath, f, nu)
+vol_source_2d, mom_source_2d_x, mom_source_2d_y, cori_u_2d, cori_v_2d = evaluate_swe_source(elev, u_2d, v_2d, bath, f, nu, nonlin=True)
+temp_source_3d, adv_t_uv, adv_t_w = evaluate_tracer_source(elev, temp, u, v, w, bath, f, nu)
 
 
 def expr2str(e):
@@ -210,3 +215,43 @@ print_expr('vol_source_2d', to_2d_coords(vol_source_2d))
 print_expr('mom_source_2d', to_2d_coords(mom_source_2d_x), to_2d_coords(mom_source_2d_y))
 print_expr('mom_source_3d', mom_source_x, mom_source_y, 0)
 print_expr('temp_source_3d', temp_source_3d)
+
+
+_x, _y, _z = sympy.symbols('x y z')
+_lx, _ly = sympy.symbols('L_x L_y')
+_depth = sympy.symbols('h')
+_eos_alpha, _eos_t0, _eos_s0 = sympy.symbols('alpha T_0 S_0')
+_eos_beta = 0
+_rho0 = sympy.symbols('rho_0', positive=True)
+_salt0 = sympy.symbols('S_a', positive=True)
+_g = sympy.symbols('g', positive=True)
+
+def for_latex(e):
+    o = e.subs(x, _x).subs(y, _y).subs(z, _z).subs(lx, _lx).subs(ly, _ly).subs(depth, _depth).subs(g, _g)
+    o = o.subs(eos_alpha, _eos_alpha).subs(eos_beta, _eos_beta).subs(eos_t0, _eos_t0).subs(eos_s0, _eos_s0).subs(rho0, _rho0).subs(salt0, _salt0)
+    return sympy.simplify(o)
+
+print('\nAnalytical functions:\n')
+print('T_a &= ' + sympy.latex(for_latex(temp)))
+print('u_a &= ' + sympy.latex(for_latex(u)))
+print('v_a &= ' + sympy.latex(for_latex(v)))
+print('u_a\' &= ' + sympy.latex(for_latex(u_3d)))
+print('v_a\' &= ' + sympy.latex(for_latex(v_3d)))
+print('\\bar{u}_a &= ' + sympy.latex(for_latex(u_2d)))
+print('\\bar{v}_a &= ' + sympy.latex(for_latex(v_2d)))
+print('w_a &= ' + sympy.latex(for_latex(w)))
+print('\\rho_a\' &= ' + sympy.latex(for_latex(rho)))
+print('r_a &= ' + sympy.latex(for_latex(baroc_head)))
+print('(\\IPG)_{x} &= ' + sympy.latex(for_latex(int_pg_x)))
+print('(\\IPG)_{y} &= ' + sympy.latex(for_latex(int_pg_y)))
+print('(\\bnabla_h \\cdot (\\bu \\bu))_{x} &= ' + sympy.latex(for_latex(adv_u)))
+print('(\\bnabla_h \\cdot (\\bu \\bu))_{y} &= ' + sympy.latex(for_latex(adv_v)))
+print('\\pd{\\left(w u \\right)}{z} &= ' + sympy.latex(for_latex(adv_w_u)))
+print('\\pd{\\left(w v \\right)}{z} &= ' + sympy.latex(for_latex(adv_w_v)))
+print('f\\bm{e}_z\\wedge\\baru &= ' + sympy.latex(for_latex(cori_u_2d)))
+print('f\\bm{e}_z\\wedge\\baru &= ' + sympy.latex(for_latex(cori_v_2d)))
+print('f\\bm{e}_z\\wedge u\' &= ' + sympy.latex(for_latex(cori_u)))
+print('f\\bm{e}_z\\wedge v\' &= ' + sympy.latex(for_latex(cori_v)))
+print('\\bnabla_h\\cdot\\left(H\\bbaru\\right) &= ' + sympy.latex(for_latex(vol_source_2d)))
+print('\\bnabla_h \\cdot (\\bu T) &= ' + sympy.latex(for_latex(adv_t_uv)))
+print('\\pd{\\left(w T \\right)}{z} &= ' + sympy.latex(for_latex(adv_t_w)))
