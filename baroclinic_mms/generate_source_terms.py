@@ -183,7 +183,7 @@ def expr2str(e):
     return str(e)
 
 
-def print_expr(name, *expr):
+def print_expr(name, *expr, dict_fmt=True):
     if len(expr) == 1:
         expr_str = expr2str(expr[0])
     else:
@@ -193,65 +193,80 @@ def print_expr(name, *expr):
         else:
             comp_str = ', '.join([expr2str(e) for e in expr])
             expr_str = 'as_vector((' + comp_str + '))'
-    print("    out['{:}'] = {:}".format(name, expr_str))
+    if dict_fmt:
+        print("    out['{:}'] = {:}".format(name, expr_str))
+    else:
+        print("    {:} = {:}".format(name, expr_str))
 
 def to_2d_coords(expr):
     if isinstance(expr, numbers.Number):
         return expr
     return expr.subs(x, x_2d).subs(y, y_2d)
 
-print_expr('elev_2d', to_2d_coords(elev))
-print_expr('uv_full_3d', u, v, 0)
-print_expr('uv_2d', to_2d_coords(u_2d), to_2d_coords(v_2d))
-print_expr('uv_dav_3d', u_2d, v_2d, 0)
-print_expr('uv_3d', u_3d, v_3d, 0)
-print_expr('w_3d', 0, 0, w)
-print_expr('temp_3d', temp)
-print_expr('density_3d', rho)
-print_expr('baroc_head_3d', baroc_head)
-print_expr('int_pg_3d', int_pg_x, int_pg_y, 0)
+#print_expr('elev_2d', to_2d_coords(elev))
+#print_expr('uv_full_3d', u, v, 0)
+#print_expr('uv_2d', to_2d_coords(u_2d), to_2d_coords(v_2d))
+#print_expr('uv_dav_3d', u_2d, v_2d, 0)
+#print_expr('uv_3d', u_3d, v_3d, 0)
+#print_expr('w_3d', 0, 0, w)
+#print_expr('temp_3d', temp)
+#print_expr('density_3d', rho)
+#print_expr('baroc_head_3d', baroc_head)
+#print_expr('int_pg_3d', int_pg_x, int_pg_y, 0)
 
-print_expr('vol_source_2d', to_2d_coords(vol_source_2d))
-print_expr('mom_source_2d', to_2d_coords(mom_source_2d_x), to_2d_coords(mom_source_2d_y))
-print_expr('mom_source_3d', mom_source_x, mom_source_y, 0)
-print_expr('temp_source_3d', temp_source_3d)
+#print_expr('vol_source_2d', to_2d_coords(vol_source_2d))
+#print_expr('mom_source_2d', to_2d_coords(mom_source_2d_x), to_2d_coords(mom_source_2d_y))
+#print_expr('mom_source_3d', mom_source_x, mom_source_y, 0)
+#print_expr('temp_source_3d', temp_source_3d)
 
 
-_x, _y, _z = sympy.symbols('x y z')
-_lx, _ly = sympy.symbols('L_x L_y')
-_depth = sympy.symbols('h')
-_eos_alpha, _eos_t0, _eos_s0 = sympy.symbols('alpha T_0 S_0')
-_eos_beta = 0
-_rho0 = sympy.symbols('rho_0', positive=True)
-_salt0 = sympy.symbols('S_a', positive=True)
-_g = sympy.symbols('g', positive=True)
+#_x, _y, _z = sympy.symbols('x y z')
+#_lx, _ly = sympy.symbols('L_x L_y')
+#_depth = sympy.symbols('h')
+#_eos_alpha, _eos_t0, _eos_s0 = sympy.symbols('alpha T_0 S_0')
+#_eos_beta = 0
+#_rho0 = sympy.symbols('rho_0', positive=True)
+#_salt0 = sympy.symbols('S_a', positive=True)
+#_g = sympy.symbols('g', positive=True)
 
-def for_latex(e):
-    o = e.subs(x, _x).subs(y, _y).subs(z, _z).subs(lx, _lx).subs(ly, _ly).subs(depth, _depth).subs(g, _g)
-    o = o.subs(eos_alpha, _eos_alpha).subs(eos_beta, _eos_beta).subs(eos_t0, _eos_t0).subs(eos_s0, _eos_s0).subs(rho0, _rho0).subs(salt0, _salt0)
-    return sympy.simplify(o)
+#def for_latex(e):
+    #o = e.subs(x, _x).subs(y, _y).subs(z, _z).subs(lx, _lx).subs(ly, _ly).subs(depth, _depth).subs(g, _g)
+    #o = o.subs(eos_alpha, _eos_alpha).subs(eos_beta, _eos_beta).subs(eos_t0, _eos_t0).subs(eos_s0, _eos_s0).subs(rho0, _rho0).subs(salt0, _salt0)
+    #return sympy.simplify(o)
 
-print('\nAnalytical functions:\n')
-print('T_a &= ' + sympy.latex(for_latex(temp)))
-print('u_a &= ' + sympy.latex(for_latex(u)))
-print('v_a &= ' + sympy.latex(for_latex(v)))
-print('u_a\' &= ' + sympy.latex(for_latex(u_3d)))
-print('v_a\' &= ' + sympy.latex(for_latex(v_3d)))
-print('\\bar{u}_a &= ' + sympy.latex(for_latex(u_2d)))
-print('\\bar{v}_a &= ' + sympy.latex(for_latex(v_2d)))
-print('w_a &= ' + sympy.latex(for_latex(w)))
-print('\\rho_a\' &= ' + sympy.latex(for_latex(rho)))
-print('r_a &= ' + sympy.latex(for_latex(baroc_head)))
-print('(\\IPG)_{x} &= ' + sympy.latex(for_latex(int_pg_x)))
-print('(\\IPG)_{y} &= ' + sympy.latex(for_latex(int_pg_y)))
-print('(\\bnabla_h \\cdot (\\bu \\bu))_{x} &= ' + sympy.latex(for_latex(adv_u)))
-print('(\\bnabla_h \\cdot (\\bu \\bu))_{y} &= ' + sympy.latex(for_latex(adv_v)))
-print('\\pd{\\left(w u \\right)}{z} &= ' + sympy.latex(for_latex(adv_w_u)))
-print('\\pd{\\left(w v \\right)}{z} &= ' + sympy.latex(for_latex(adv_w_v)))
-print('f\\bm{e}_z\\wedge\\baru &= ' + sympy.latex(for_latex(cori_u_2d)))
-print('f\\bm{e}_z\\wedge\\baru &= ' + sympy.latex(for_latex(cori_v_2d)))
-print('f\\bm{e}_z\\wedge u\' &= ' + sympy.latex(for_latex(cori_u)))
-print('f\\bm{e}_z\\wedge v\' &= ' + sympy.latex(for_latex(cori_v)))
-print('\\bnabla_h\\cdot\\left(H\\bbaru\\right) &= ' + sympy.latex(for_latex(vol_source_2d)))
-print('\\bnabla_h \\cdot (\\bu T) &= ' + sympy.latex(for_latex(adv_t_uv)))
-print('\\pd{\\left(w T \\right)}{z} &= ' + sympy.latex(for_latex(adv_t_w)))
+#print('\nAnalytical functions:\n')
+#print('T_a &= ' + sympy.latex(for_latex(temp)))
+#print('u_a &= ' + sympy.latex(for_latex(u)))
+#print('v_a &= ' + sympy.latex(for_latex(v)))
+#print('u_a\' &= ' + sympy.latex(for_latex(u_3d)))
+#print('v_a\' &= ' + sympy.latex(for_latex(v_3d)))
+#print('\\bar{u}_a &= ' + sympy.latex(for_latex(u_2d)))
+#print('\\bar{v}_a &= ' + sympy.latex(for_latex(v_2d)))
+#print('w_a &= ' + sympy.latex(for_latex(w)))
+#print('\\rho_a\' &= ' + sympy.latex(for_latex(rho)))
+#print('r_a &= ' + sympy.latex(for_latex(baroc_head)))
+#print('(\\IPG)_{x} &= ' + sympy.latex(for_latex(int_pg_x)))
+#print('(\\IPG)_{y} &= ' + sympy.latex(for_latex(int_pg_y)))
+#print('(\\bnabla_h \\cdot (\\bu \\bu))_{x} &= ' + sympy.latex(for_latex(adv_u)))
+#print('(\\bnabla_h \\cdot (\\bu \\bu))_{y} &= ' + sympy.latex(for_latex(adv_v)))
+#print('\\pd{\\left(w u \\right)}{z} &= ' + sympy.latex(for_latex(adv_w_u)))
+#print('\\pd{\\left(w v \\right)}{z} &= ' + sympy.latex(for_latex(adv_w_v)))
+#print('f\\bm{e}_z\\wedge\\baru &= ' + sympy.latex(for_latex(cori_u_2d)))
+#print('f\\bm{e}_z\\wedge\\baru &= ' + sympy.latex(for_latex(cori_v_2d)))
+#print('f\\bm{e}_z\\wedge u\' &= ' + sympy.latex(for_latex(cori_u)))
+#print('f\\bm{e}_z\\wedge v\' &= ' + sympy.latex(for_latex(cori_v)))
+#print('\\bnabla_h\\cdot\\left(H\\bbaru\\right) &= ' + sympy.latex(for_latex(vol_source_2d)))
+#print('\\bnabla_h \\cdot (\\bu T) &= ' + sympy.latex(for_latex(adv_t_uv)))
+#print('\\pd{\\left(w T \\right)}{z} &= ' + sympy.latex(for_latex(adv_t_w)))
+
+
+elev_expr = 2000.*sympy.cos(2*x/lx)*sympy.sin(1.5*y/ly+0.3)
+density_expr = sympy.cos(2*x/lx)*sympy.sin((y-0.3)/lx)*sympy.cos(2*z/depth)
+baroc_head_expr = sympy.integrate(density_expr, z).subs(z, elev_expr-z)
+baroc_head_expr_dx = sympy.diff(baroc_head_expr, x)
+baroc_head_expr_dy = sympy.diff(baroc_head_expr, y)
+print_expr('elev_expr', sympy.simplify(elev_expr), dict_fmt=False)
+print_expr('density_expr', sympy.simplify(density_expr), dict_fmt=False)
+print_expr('baroc_head_expr', sympy.simplify(baroc_head_expr), dict_fmt=False)
+print_expr('baroc_head_expr_dx', sympy.simplify(baroc_head_expr_dx), dict_fmt=False)
+print_expr('baroc_head_expr_dy', sympy.simplify(baroc_head_expr_dy), dict_fmt=False)
