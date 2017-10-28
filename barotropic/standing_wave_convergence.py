@@ -7,27 +7,29 @@ from thetis import *
 from scipy import stats
 
 
-def run(refinement=1, ncycles=3, **kwargs):
+def run(refinement=1, ncycles=2, **kwargs):
 
-    print_output('Running refinement {:}'.format(refinement))
+    print_output(' --------\nRunning refinement {:}'.format(refinement))
 
     conservation_check = kwargs.pop('conservation_check', False)
 
     g_grav = physical_constants['g_grav'].dat.data[0]
-    depth = 50.0
+    depth = 100.0
     c_wave = np.sqrt(g_grav*depth)
 
     n_base = 20
     nx = n_base*refinement
     ny = 1
-    lx = 50000.
+    lx = 60000.
     ly = lx/nx
     mesh2d = RectangleMesh(nx, ny, lx, ly)
 
-    elev_amp = 1.0
+    elev_amp = 10.0 if conservation_check else 0.01
     n_layers = 2*refinement
     # estimate of max advective velocity used to estimate time step
     u_mag = Constant(0.5)
+    print_output('Triangle edge length {:} m'.format(lx/nx))
+    print_output('Number of layers {:}'.format(n_layers))
 
     # bathymetry
     P1_2d = FunctionSpace(mesh2d, 'CG', 1)
@@ -46,7 +48,7 @@ def run(refinement=1, ncycles=3, **kwargs):
     options = solver_obj.options
     options.element_family = 'dg-dg'
     options.timestepper_type = 'SSPRK22'
-    options.use_nonlinear_equations = False
+    options.use_nonlinear_equations = True
     options.solve_salinity = False
     options.solve_temperature = False
     options.use_implicit_vertical_diffusion = False
@@ -54,6 +56,7 @@ def run(refinement=1, ncycles=3, **kwargs):
     options.use_bottom_friction = False
     options.use_ale_moving_mesh = True
     options.use_limiter_for_tracers = True
+    options.use_limiter_for_velocity = False
     options.simulation_export_time = t_export
     options.simulation_end_time = t_end
     options.horizontal_velocity_scale = u_mag
@@ -130,9 +133,9 @@ def run_convergence(ref_list, saveplot=False, **options):
             #ax.set_title(' '.join([setup_name, field_str, 'degree={:}'.format(polynomial_degree), space_str]))
             ax.set_title(field_str)
         if expected_slope is not None:
-            err_msg = '{:}: Wrong convergence rate {:.4f}, expected {:.4f}'.format(setup_name, slope, expected_slope)
+            err_msg = '{:}: Wrong {:} convergence rate {:.4f}, expected {:.4f}'.format(setup_name, field_str, slope, expected_slope)
             assert slope > expected_slope*(1 - slope_rtol), err_msg
-            print_output('{:}: convergence rate {:.4f} PASSED'.format(setup_name, slope))
+            print_output('{:}: {:} convergence rate {:.4f} PASSED'.format(setup_name, field_str, slope))
         else:
             print_output('{:}: {:} convergence rate {:.4f}'.format(setup_name, field_str, slope))
         return slope
@@ -159,6 +162,6 @@ def run_convergence(ref_list, saveplot=False, **options):
     plt.savefig(imgfile, dpi=200, bbox_inches='tight')
 
 
-#run_convergence([1, 2, 3, 4, 6, 8, 10], saveplot=True, polynomial_degree=1, element_family='dg-dg', no_exports=True)
+run_convergence([1, 2, 3, 4, 6, 8, 10], saveplot=True, polynomial_degree=1, element_family='dg-dg', no_exports=True)
 
-run(refinement=4, solve_salinity=True, solve_temperature=True, conservation_check=True)
+# run(refinement=2, solve_salinity=True, solve_temperature=True, conservation_check=True)
