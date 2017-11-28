@@ -155,11 +155,13 @@ def run_convergence(ref_list, saveplot=False, **options):
     ref_str = 'ref-' + '-'.join([str(r) for r in ref_list])
     degree_str = 'o{:}'.format(polynomial_degree)
     imgfile = '_'.join(['convergence', setup_name, ref_str, degree_str, space_str])
-    imgfile += '.png'
     imgdir = create_directory('plots')
     imgfile = os.path.join(imgdir, imgfile)
-    print_output('saving figure {:}'.format(imgfile))
-    plt.savefig(imgfile, dpi=200, bbox_inches='tight')
+    formats = ['png', 'pdf']
+    for fmt in formats:
+        out = imgfile + '.' + fmt
+        print_output('saving figure {:}'.format(out))
+        plt.savefig(out, dpi=200, bbox_inches='tight')
 
 
 run_convergence([1, 2, 3, 4, 6, 8, 10], saveplot=True, polynomial_degree=1, element_family='dg-dg', no_exports=True)

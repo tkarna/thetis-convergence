@@ -448,11 +448,13 @@ def run_convergence(setup, ref_list, saveplot=False, **options):
     degree_str = 'o{:}'.format(polynomial_degree)
     test_name = 'baroclinic-mms'
     imgfile = '_'.join(['convergence', test_name, setup_name, ref_str, degree_str, space_str])
-    imgfile += '.png'
     imgdir = create_directory('plots')
     imgfile = os.path.join(imgdir, imgfile)
-    print_output('saving figure {:}'.format(imgfile))
-    plt.savefig(imgfile, dpi=200, bbox_inches='tight')
+    formats = ['png', 'pdf']
+    for fmt in formats:
+        out = imgfile + '.' + fmt
+        print_output('saving figure {:}'.format(out))
+        plt.savefig(out, dpi=200, bbox_inches='tight')
 
 # NOTE
 # - setup1 OK for temp and 2d
