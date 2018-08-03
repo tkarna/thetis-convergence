@@ -6,6 +6,9 @@ tracers.
 from thetis import *
 from scipy import stats
 
+n_base = 20
+lx = 60000.
+
 
 def run(refinement=1, ncycles=2, **kwargs):
 
@@ -17,10 +20,8 @@ def run(refinement=1, ncycles=2, **kwargs):
     depth = 100.0
     c_wave = np.sqrt(g_grav*depth)
 
-    n_base = 20
     nx = n_base*refinement
     ny = 1
-    lx = 60000.
     ly = lx/nx
     mesh2d = RectangleMesh(nx, ny, lx, ly)
 
@@ -104,9 +105,11 @@ def run_convergence(ref_list, saveplot=False, **options):
     polynomial_degree = options.get('polynomial_degree', 1)
     space_str = options.get('element_family')
     l2_err = []
+    dx_list = []
     for r in ref_list:
         l2_err.append(run(r, **options))
-    x_log = np.log10(np.array(ref_list, dtype=float)**-1)
+        dx_list.append(lx/(n_base*r))
+    x_log = np.log10(np.array(dx_list))
     y_log_elev = np.log10(np.array([v[0] for v in l2_err]))
     y_log_uv = np.log10(np.array([v[1] for v in l2_err]))
     setup_name = 'standingwave'

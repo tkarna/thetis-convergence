@@ -30,6 +30,7 @@ class AxesLabeler(object):
 # define some global constants
 lx = 15e3
 ly = 10e3
+n_base = 4
 area = lx*ly
 depth = 40.0
 nu0 = 0.0
@@ -245,8 +246,8 @@ def run(setup, refinement, polynomial_degree, do_export=True, **options):
 
     # mesh
     n_layers = 2*refinement
-    nx = 4*refinement
-    ny = 4*refinement
+    nx = n_base*refinement
+    ny = n_base*refinement
     mesh2d = RectangleMesh(nx, ny, lx, ly)
 
     # outputs
@@ -381,10 +382,13 @@ def run_convergence(setup, ref_list, saveplot=False, **options):
     """Runs test for a list of refinements and computes error convergence rate"""
     polynomial_degree = options.get('polynomial_degree', 1)
     space_str = options.get('element_family')
+
     l2_err = []
+    dx_list = []
     for r in ref_list:
         l2_err.append(run(setup, r, **options))
-    x_log = np.log10(np.array(ref_list, dtype=float)**-1)
+        dx_list.append(lx/(n_base*r))
+    x_log = np.log10(np.array(dx_list))
     var_list = sorted(l2_err[0].keys())
     y_log = {}
     for k in var_list:
